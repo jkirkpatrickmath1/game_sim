@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Event Simulation Match Schedule</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background-color: #f0f0f0;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        table {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            background-color: #fff;
+            box-shadow: 0px 2px 6px rgba(0,0,0,0.2);
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #ccc;
+        }
+
+        th {
+            background-color: #333;
+            color: #fff;
+        }
+
+        .red {
+            background-color: #ffcccc;
+        }
+
+        .blue {
+            background-color: #cce0ff;
+        }
+
+        .button-container {
+            text-align: center;
+            margin: 30px;
+        }
+
+        button {
+            padding: 12px 30px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>FRC Match Schedule</h1>
+
+    <table>
+        <tr>
+            <th>Match #</th>
+            <th>Red Alliance</th>
+            <th>Blue Alliance</th>
+        </tr>
+
+        {% for match in matches %}
+        <tr>
+            <td>{{ match.num }}</td>
+            <td class="red">
+                {% for team in match["red"] %}
+                    {{ team }}{% if not loop.last %}, {% endif %}
+                {% endfor %}
+            </td>
+            <td class="blue">
+                {% for team in match["blue"] %}
+                    {{ team }}{% if not loop.last %}, {% endif %}
+                {% endfor %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <div class="button-container">
+        <form action="{{ url_for('match') }}" method="get">
+            <button type="submit">Start Event</button>
+        </form>
+    </div>
+</body>
+</html>

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Rankings</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 40px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        table {
+            width: 70%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            background-color: #fff;
+            box-shadow: 0px 2px 6px rgba(0,0,0,0.2);
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #ccc;
+        }
+
+        th {
+            background-color: #333;
+            color: #fff;
+        }
+
+        .button-container {
+            text-align: center;
+            margin: 30px;
+        }
+
+        button {
+            padding: 12px 30px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+    /* Bottom ticker */
+    #bottomTicker {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background: #222;
+        color: white;
+        overflow: hidden;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        z-index: 1000;
+    }
+
+    #tickerContent {
+        white-space: nowrap;
+        display: inline-block;
+        animation: scrollTicker 25s linear infinite;
+        padding-left: 100%;
+    }
+
+    .ticker-item {
+        margin-right: 60px;
+        font-weight: bold;
+    }
+
+    .ticker-red { color: #ff6b6b; }
+    .ticker-blue { color: #6fa8ff; }
+
+    @keyframes scrollTicker {
+        from { transform: translateX(0); }
+        to { transform: translateX(-100%); }
+    }
+
+    </style>
+</head>
+<body>
+    <h1>Team Rankings</h1>
+
+    <table>
+        <tr>
+            <th>Rank</th>
+            <th>Team</th>
+            <th>Avg RP</th>
+            <th>Avg Match Points</th>
+            <th>Avg Auto</th>
+        </tr>
+
+        {% for team in teams %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ team.name }}</td>
+            <td>{{ "%.2f"|format(team["avg_rp"]) }}</td>
+            <td>{{ "%.2f"|format(team["avg_match"]) }}</td>
+            <td>{{ "%.2f"|format(team["avg_auto"]) }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <div class="button-container">
+        {% if current_match < total_matches %}
+        <form action="{{ url_for('match') }}" method="get">
+            <button type="submit">Next Match</button>
+        </form>
+        {% else %}
+        <p>All matches completed!</p>
+        {% endif %}
+    </div>
+
+    
+<!-- Bottom running ticker -->
+<div id="bottomTicker">
+    <div id="tickerContent">
+        {% for m in next_matches %}
+            <span class="ticker-item">
+                <strong>Match {{ m.num }}:</strong>
+                <span class="ticker-red">{{ m.red | join(', ') }}</span>
+                vs
+                <span class="ticker-blue">{{ m.blue | join(', ') }}</span>
+            </span>
+        {% endfor %}
+    </div>
+</div>
+
+</body>
+</html>

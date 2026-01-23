@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Match {{ match.num }}</title>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f0f0f0;
+        margin: 40px;
+        padding-bottom: 80px; /* space for ticker */
+    }
+
+    h1 {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    #currentAlliances {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    #timer {
+        font-size: 60px;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    #controls {
+        text-align: center;
+        margin-bottom: 25px;
+    }
+
+    button {
+        padding: 12px 30px;
+        font-size: 16px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        margin: 0 8px;
+    }
+
+    #startButton { background-color: #4CAF50; color: white; }
+    #pauseButton { background-color: #f12525; color: white; display: none; }
+    #replayButton { background-color: #ff6e00; color: white; display: none; }
+
+    form {
+        width: 80%;
+        margin: 0 auto;
+        display: none;
+        justify-content: space-around;
+        flex-wrap: wrap;
+    }
+
+    .alliance {
+        width: 45%;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0px 2px 6px rgba(0,0,0,0.2);
+    }
+
+    .red { background-color: #ffcccc; }
+    .blue { background-color: #cce0ff; }
+
+    .alliance h2 {
+        text-align: center;
+        margin-bottom: 15px;
+    }
+
+    .teams {
+        text-align: center;
+        font-weight: bold;
+        margin-bottom: 15px;
+    }
+
+    .inputs {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        margin-top: 10px;
+    }
+
+    .inputs input {
+        width: 60px;
+        padding: 4px;
+        font-size: 16px;
+    }
+
+    /* Submit button styling */
+    .submit-btn {
+        width: 100%;
+        text-align: center;
+        margin-top: 30px;
+    }
+
+    .submit-btn button {
+        background-color: #4CAF50;
+        color: white;
+        font-size: 20px;
+        padding: 14px 40px;
+        border-radius: 8px;
+    }
+
+    .submit-btn button:hover {
+        background-color: #45a049;
+    }
+
+    /* Bottom ticker */
+    #bottomTicker {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background: #222;
+        color: white;
+        overflow: hidden;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        z-index: 1000;
+    }
+
+    #tickerContent {
+        white-space: nowrap;
+        display: inline-block;
+        animation: scrollTicker 25s linear infinite;
+        padding-left: 100%;
+    }
+
+    .ticker-item {
+        margin-right: 60px;
+        font-weight: bold;
+    }
+
+    .ticker-red { color: #ff6b6b; }
+    .ticker-blue { color: #6fa8ff; }
+
+    @keyframes scrollTicker {
+        from { transform: translateX(0); }
+        to { transform: translateX(-100%); }
+    }
+</style>
+</head>
+
+<body>
+
+<h1>Match {{ match.num }}</h1>
+
+<div id="currentAlliances">
+    <h3 class="red">Red Alliance: {{ match["red"]|join(', ') }}</h3>
+    <h3 class="blue">Blue Alliance: {{ match["blue"]|join(', ') }}</h3>
+</div>
+
+<div id="timer">Ready</div>
+
+<div id="controls">
+    <button id="startButton">Start Match</button>
+    <button id="pauseButton">Pause</button>
+    <button id="replayButton">Replay Match</button>
+</div>
+
+<form id="matchForm" method="post">
+    <div class="alliance red">
+        <h2>Red Alliance</h2>
+        <div class="teams">{{ match["red"]|join(', ') }}</div>
+        <div class="inputs">
+            <label>RP</label><input type="number" name="red_rp" value="0" min="0" max="3">
+            <label>Match</label><input type="number" name="red_match" value="0" min="0">
+            <label>Auto</label><input type="number" name="red_auto" value="0" min="0">
+        </div>
+    </div>
+
+    <div class="alliance blue">
+        <h2>Blue Alliance</h2>
+        <div class="teams">{{ match["blue"]|join(', ') }}</div>
+        <div class="inputs">
+            <label>RP</label><input type="number" name="blue_rp" value="0" min="0" max="3">
+            <label>Match</label><input type="number" name="blue_match" value="0" min="0">
+            <label>Auto</label><input type="number" name="blue_auto" value="0" min="0">
+        </div>
+    </div>
+
+    <div class="submit-btn">
+        <button type="submit">Submit Scores</button>
+    </div>
+</form>
+
+<!-- Bottom running ticker -->
+<div id="bottomTicker">
+    <div id="tickerContent">
+        {% for m in next_matches %}
+            <span class="ticker-item">
+                <strong>Match {{ m.num }}:</strong>
+                <span class="ticker-red">{{ m.red | join(', ') }}</span>
+                vs
+                <span class="ticker-blue">{{ m.blue | join(', ') }}</span>
+            </span>
+        {% endfor %}
+    </div>
+</div>
+
+<audio id="chargeSound" preload="auto" src="{{ url_for('static', filename='charge.mp3') }}"></audio>
+<audio id="dingSound" src="{{ url_for('static', filename='ding.mp3') }}"></audio>
+<audio id="buzzerSound" src="{{ url_for('static', filename='buzz.mp3') }}"></audio>
+<audio id="warningSound" src="{{ url_for('static', filename='warning.wav') }}"></audio>
+
+<script>
+let timerDisplay = document.getElementById("timer");
+let startButton = document.getElementById("startButton");
+let pauseButton = document.getElementById("pauseButton");
+let replayButton = document.getElementById("replayButton");
+let matchForm = document.getElementById("matchForm");
+
+let chargeSound = document.getElementById("chargeSound");
+let dingSound = document.getElementById("dingSound");
+let buzzerSound = document.getElementById("buzzerSound");
+let warningSound = document.getElementById("warningSound");
+
+let timeouts = [];
+let intervals = [];
+let paused = false;
+
+function clearAllTimers() {
+    timeouts.forEach(t => clearTimeout(t));
+    intervals.forEach(i => clearInterval(i));
+    timeouts = [];
+    intervals = [];
+}
+
+function countdown(seconds, label) {
+    let remaining = seconds;
+    timerDisplay.innerText = label + ": " + remaining;
+
+    let interval = setInterval(() => {
+        if (!paused) {
+            remaining--;
+            timerDisplay.innerText = label + ": " + remaining;
+            if (remaining <= 0) clearInterval(interval);
+        }
+    }, 1000);
+
+    intervals.push(interval);
+}
+
+startButton.addEventListener("click", () => {
+    chargeSound.currentTime = 0;
+    chargeSound.play();
+
+    startButton.disabled = true;
+    startButton.style.backgroundColor = "grey";
+
+    pauseButton.style.display = "inline-block";
+    replayButton.style.display = "inline-block";
+
+    paused = false;
+    clearAllTimers();
+
+    timeouts.push(setTimeout(() => countdown(10, "AUTO"), 2000));
+    timeouts.push(setTimeout(() => buzzerSound.play(), 12000));
+    timeouts.push(setTimeout(() => { dingSound.play(); countdown(30, "TELEOP"); }, 14000));
+    timeouts.push(setTimeout(() => warningSound.play(), 33000));
+
+    timeouts.push(setTimeout(() => {
+        buzzerSound.play();
+        timerDisplay.innerText = "MATCH OVER";
+        matchForm.style.display = "flex";
+        clearAllTimers();
+    }, 44000));
+});
+
+pauseButton.addEventListener("click", () => {
+    paused = !paused;
+    pauseButton.textContent = paused ? "Resume" : "Pause";
+});
+
+replayButton.addEventListener("click", () => {
+    clearAllTimers();
+    paused = false;
+
+    timerDisplay.innerText = "Ready";
+    pauseButton.textContent = "Pause";
+
+    startButton.disabled = false;
+    startButton.style.backgroundColor = "#4CAF50";
+
+    pauseButton.style.display = "none";
+    replayButton.style.display = "none";
+
+    matchForm.style.display = "none";
+});
+</script>
+
+</body>
+</html>
