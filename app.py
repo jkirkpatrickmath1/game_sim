@@ -3,7 +3,8 @@ from schedular import generate_matches
 import math
 
 app = Flask(__name__)
-app.secret_key = "525SwartdogsAreSoCool"
+import os
+app.secret_key = os.environ.get("SECRET_KEY", "dev")
 
 def make_team(name):
     return {
