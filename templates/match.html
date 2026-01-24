@@ -161,7 +161,7 @@
     <button id="replayButton">Replay Match</button>
 </div>
 
-<form id="matchForm" method="post">
+<form id="matchForm" method="post" action="{{ url_for('match') }}">
     <div class="alliance red">
         <h2>Red Alliance</h2>
         <div class="teams">{{ match["red"]|join(', ') }}</div>

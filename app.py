@@ -140,7 +140,7 @@ def rankings():
         match = matches[current]  # FIXED: removed trailing comma
 
     next_matches = []
-    for i in range(1, 3):
+    for i in range(0, 2):
         if current + i < len(matches):
             next_matches.append(matches[current + i])
 
