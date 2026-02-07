@@ -38,10 +38,11 @@ def generate_matches(team_names, matches_per_team=4):
         for names in team_play_counts:
             if team_play_counts[names] <= min_play_count:
                 available_teams.append(names)
-                if len(available_teams) == 6:
-                    break
+                # if len(available_teams) == 6:
+                #     break
        
         #if we dont have enough teams
+        print(available_teams)
         if len(available_teams) < 6:
             extras = [team for team in team_play_counts if team not in available_teams]
            
